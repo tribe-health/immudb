@@ -18,7 +18,8 @@ limitations under the License.
 
 package service
 
-var ConfigImmugw = []byte(`address = 127.0.0.1
+var ConfigImmugw = []byte(`dir = /var/lib/immudb
+address = 127.0.0.1
 port = 3323
 immudbaddress = 127.0.0.1
 immudbport = 3322
