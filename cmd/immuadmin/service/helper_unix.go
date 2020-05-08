@@ -20,7 +20,10 @@ package service
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
+	immudb "github.com/codenotary/immudb/cmd/immudb/command"
+	immugw "github.com/codenotary/immudb/cmd/immugw/command"
 	"github.com/takama/daemon"
 	"io"
 	"os"
@@ -111,7 +114,16 @@ func InstallSetup(serviceName string) (err error) {
 			return err
 		}
 	}
+	if err = installManPages(serviceName); err != nil {
+		return err
+	}
+	return err
+}
 
+func UninstallSetup(serviceName string) (err error){
+	if err = uninstallManPages(serviceName); err!=nil{
+		return err
+	}
 	return err
 }
 
@@ -255,6 +267,30 @@ func CopyExecInOsDefault(execPath string) (newExecPath string, err error) {
 	}
 
 	return newExecPath, err
+}
+
+func installManPages(serviceName string) error {
+	switch serviceName {
+	case "immudb":
+		return immudb.InstallManPages()
+	case "immugw":
+		return immugw.InstallManPages()
+	default:
+		return errors.New("invalid service name specified")
+	}
+	return nil
+}
+
+func uninstallManPages(serviceName string) error {
+	switch serviceName {
+	case "immudb":
+		return immudb.UnistallManPages()
+	case "immugw":
+		return immugw.UnistallManPages()
+	default:
+		return errors.New("invalid service name specified")
+	}
+	return nil
 }
 
 // GetDefaultExecPath returns the default exec path. It accepts an executable or the absolute path of an executable and returns the default exec path using the exec name provided

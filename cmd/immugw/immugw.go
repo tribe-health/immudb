@@ -63,45 +63,7 @@ Environment variables:
   IMMUGW_CERTIFICATE=./tools/mtls/4_client/certs/localhost.cert.pem
   IMMUGW_PKEY=./tools/mtls/4_client/private/localhost.key.pem
   IMMUGW_CLIENTCAS=./tools/mtls/2_intermediate/certs/ca-chain.cert.pem`,
-		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			var options gw.Options
-			if options, err = parseOptions(cmd); err != nil {
-				return err
-			}
-			immuGwServer := gw.
-				DefaultServer().
-				WithOptions(options)
-			if options.Logfile != "" {
-				if flogger, file, err := logger.NewFileLogger("immugw ", options.Logfile); err == nil {
-					defer func() {
-						if err = file.Close(); err != nil {
-							c.QuitToStdErr(err)
-						}
-					}()
-					immuGwServer.WithLogger(flogger)
-				} else {
-					return err
-				}
-			}
-			if options.Detached {
-				c.Detached()
-			}
-
-			var d daem.Daemon
-			if d, err = daem.New("immugw", "immugw", "C:/c/ROOT/immudb/immugw.exe"); err != nil {
-				c.QuitToStdErr(err)
-			}
-
-			service := gw.Service{
-				ImmuGwServer: *immuGwServer,
-			}
-
-			d.Run(service)
-
-			return
-
-		},
-		DisableAutoGenTag: true,
+		RunE: Immugw,
 	}
 
 	setupFlags(immugwCmd, gw.DefaultOptions(), client.DefaultMTLsOptions())
@@ -119,6 +81,43 @@ Environment variables:
 	}
 }
 
+func Immugw(cmd *cobra.Command, args []string) (err error) {
+	var options gw.Options
+	if options, err = parseOptions(cmd); err != nil {
+		return err
+	}
+	immuGwServer := gw.
+		DefaultServer().
+		WithOptions(options)
+	if options.Logfile != "" {
+		if flogger, file, err := logger.NewFileLogger("immugw ", options.Logfile); err == nil {
+			defer func() {
+				if err = file.Close(); err != nil {
+					c.QuitToStdErr(err)
+				}
+			}()
+			immuGwServer.WithLogger(flogger)
+		} else {
+			return err
+		}
+	}
+	if options.Detached {
+		c.Detached()
+	}
+
+	var d daem.Daemon
+	if d, err = daem.New("immugw", "immugw", "C:/c/ROOT/immudb/immugw.exe"); err != nil {
+		c.QuitToStdErr(err)
+	}
+
+	service := gw.Service{
+		ImmuGwServer: *immuGwServer,
+	}
+
+	d.Run(service)
+
+	return
+}
 func parseOptions(cmd *cobra.Command) (options gw.Options, err error) {
 	port := viper.GetInt("default.port")
 	address := viper.GetString("default.address")
